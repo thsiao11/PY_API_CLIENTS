@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
 """
-This app will extract service name and weather condition for current day data from two APIs.
+This program will extract service name and weather condition for current day data from two APIs.
 Namely, openweathermap.org and mobile311-dev.sfgov.org.
 
-This app requires the following parameters to execute:
+This program requires the following parameters to execute:
   - auth_id: type string with no quotes, the appid is required by the openweathermap.org API
     Example --auth_id=12345dkdkk222222
 
-To run this app:
+To run this program:
   $ python get_info.py
 
 An example output shown below:
@@ -19,12 +19,6 @@ Street or Sidewalk Cleaning              | Intersection of Cumberland St & Guerr
 Homeless Concerns                        | 450 THE EMBARCADERO                      | Clouds
 Pothole or Street Issues                 | 1819 MARKET ST                           | Clouds
 ...
-
-
-To integrate this app with other apps, this app can be modified to be
-importable source of data to another app by changing the main section of
-the app and make it as a function. The functions in the app can be called
-by any other function with the two required parameters fed into them.
 
 """
 
