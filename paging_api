@@ -1,0 +1,69 @@
+"""
+for each record, capture the following fields and save to a csv file:
+ - recordid
+ - record_timestamp (epoch time)
+ - population_people
+ - country
+ - year
+ - gdp_usd_million_us_2010
+
+More detailed comments to come...
+
+"""
+
+import json
+import requests
+import argparse
+import time
+import gzip
+import datetime
+
+KAPSARC_URL = 'https://datasource.kapsarc.org/api/records/1.0/search/'
+WORLD_ENERGY_USE_DATASET = 'world-energy-use-1960-2012'
+DATA_ROWS_RETURNED = 2
+OUTPUT_FILE = WORLD_ENERGY_USE_DATASET + '.csv.gz'
+
+
+def get_data(url, params):
+    resp = requests.get(url, params)
+    if resp.status_code == 200:
+        return json.loads(resp.text)
+    return {}
+
+
+if __name__ == '__main__':
+
+    parse = argparse.ArgumentParser(description='May require a few parameters to run program')
+
+    url = KAPSARC_URL
+    start_pg = 0
+    data_to_read = True
+    data_rec = list()
+    row_dict = {}
+    file_header = ['update_timestamp', 'recordid', 'record_date', 'population_people', 
+                   'country', 'year', 'gdp_usd_million_us_2010']
+    with gzip.open(OUTPUT_FILE, 'wb') as ofp:
+        ofp.write(','.join(file_header)+'\n')
+    #    while data_to_read:
+        for j in range(0, 5):
+            parms = {'dataset':WORLD_ENERGY_USE_DATASET, 'rows': DATA_ROWS_RETURNED, 'start': start_pg}
+            j_dict = get_data(url, parms)
+            if j_dict:
+                for i_row in j_dict['records']:
+                    cur_timestamp = datetime.datetime.strftime(datetime.datetime.utcnow(), '%Y-%m-%d %H:%M:%S')
+                    record_pop = 0 \
+                        if not 'population_people' in i_row['fields'] \
+                        else str(i_row['fields']['population_people'])
+                    record_country = '' if not 'country' in i_row['fields'] else i_row['fields']['country']
+                    record_year = 9999 if not 'year' in i_row['fields'] else i_row['fields']['year']
+                    record_gdp = 0.0 \
+                        if not 'gdp_usd_million_us_2010' in i_row['fields'] \
+                        else str(i_row['fields']['gdp_usd_million_us_2010'])
+                    ofp.write("{0},{1},{2},{3},'{4}',{5},{6}\n".format(
+                        cur_timestamp, i_row['recordid'], i_row['record_timestamp'][:9],\
+                        record_pop, record_country, record_year, record_gdp
+                    ))
+                start_pg += DATA_ROWS_RETURNED
+                time.sleep(1)
+            else:
+                data_to_read = False
